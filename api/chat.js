@@ -58,7 +58,7 @@ export default async function handler(req, res) {
 
         // 調用 Gemini API (非 streaming 模式 - 簡單穩定)
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {
@@ -76,8 +76,12 @@ export default async function handler(req, res) {
 
         if (!geminiResponse.ok) {
             const errorData = await geminiResponse.text();
-            console.error('Gemini API error:', errorData);
-            return sendError(500, 'AI service error');
+            console.error('Gemini API error:', geminiResponse.status, errorData);
+            return res.status(500).json({ 
+                error: 'AI service error', 
+                status: geminiResponse.status,
+                details: errorData.substring(0, 200)
+            });
         }
 
         const data = await geminiResponse.json();
@@ -87,7 +91,10 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Error in chat handler:', error);
-        return sendError(500, 'Internal server error');
+        return res.status(500).json({ 
+            error: 'Internal server error',
+            message: error.message
+        });
     }
 }
 
