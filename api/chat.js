@@ -56,9 +56,9 @@ export default async function handler(req, res) {
 
         const fullPrompt = `${systemPrompt}\n\n遊客問題：${message}\n\n請回答：`;
 
-        // 調用 Gemini API (使用穩定的 1.5 模型)
+        // 調用 Gemini API (非 streaming 模式 - 簡單穩定)
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {
@@ -69,30 +69,7 @@ export default async function handler(req, res) {
                         parts: [{
                             text: fullPrompt
                         }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.9,
-                        topP: 0.95,
-                        maxOutputTokens: 1024,
-                    },
-                    safetySettings: [
-                        {
-                            category: "HARM_CATEGORY_HARASSMENT",
-                            threshold: "BLOCK_NONE"
-                        },
-                        {
-                            category: "HARM_CATEGORY_HATE_SPEECH",
-                            threshold: "BLOCK_NONE"
-                        },
-                        {
-                            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                            threshold: "BLOCK_NONE"
-                        },
-                        {
-                            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                            threshold: "BLOCK_NONE"
-                        }
-                    ]
+                    }]
                 })
             }
         );
@@ -103,67 +80,10 @@ export default async function handler(req, res) {
             return sendError(500, 'AI service error');
         }
 
-        // 設定 streaming 回應（CORS 頭已在前面設置）
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache, no-transform');
-        res.setHeader('Connection', 'keep-alive');
-        res.setHeader('X-Accel-Buffering', 'no'); // 禁用 Nginx 緩衝
+        const data = await geminiResponse.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '抱歉，我暫時無法回答這個問題。';
 
-        // 讀取並轉發 stream - 使用 SSE 格式（alt=sse）
-        const reader = geminiResponse.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let hasContent = false;
-
-        try {
-            console.log('開始讀取 Gemini SSE streaming...');
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    console.log('Streaming 完成');
-                    break;
-                }
-
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                
-                // 保留最後一個不完整的行
-                buffer = lines.pop() || '';
-
-                for (const line of lines) {
-                    if (!line.trim()) continue;
-                    
-                    // SSE 格式：data: {...}
-                    if (line.startsWith('data: ')) {
-                        const jsonStr = line.slice(6).trim();
-                        
-                        try {
-                            const data = JSON.parse(jsonStr);
-                            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                            
-                            if (text) {
-                                console.log('發送文字片段:', text.substring(0, 50));
-                                res.write(`data: ${JSON.stringify({ text })}\n\n`);
-                                hasContent = true;
-                            }
-                        } catch (e) {
-                            console.error('JSON parse error:', e.message);
-                            console.error('問題資料:', jsonStr.substring(0, 200));
-                        }
-                    }
-                }
-            }
-            
-            if (!hasContent) {
-                console.error('警告：沒有產生任何內容！');
-                res.write(`data: ${JSON.stringify({ text: '抱歉，我現在有點累，請再問我一次！' })}\n\n`);
-            }
-            
-        } finally {
-            reader.releaseLock();
-            res.end();
-        }
+        return res.status(200).json({ reply });
 
     } catch (error) {
         console.error('Error in chat handler:', error);

@@ -43,80 +43,22 @@ async function sendMessage() {
             body: JSON.stringify({ message: message })
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-
         if (!response.ok) {
             throw new Error('API 錯誤: ' + response.status);
         }
 
-        // 檢查是否為 streaming 回應
-        const contentType = response.headers.get('content-type');
-        console.log('Content-Type:', contentType);
-
-        if (contentType && contentType.includes('text/event-stream')) {
-            // 處理 SSE streaming
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let fullText = '';
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value, { stream: true });
-                console.log('Received chunk:', chunk);
-                
-                const lines = chunk.split('\n');
-
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        try {
-                            const jsonStr = line.slice(6).trim();
-                            if (jsonStr) {
-                                const data = JSON.parse(jsonStr);
-                                console.log('Parsed data:', data);
-                                
-                                if (data.text) {
-                                    fullText += data.text;
-                                    
-                                    // 使用 marked 解析 Markdown
-                                    if (typeof marked !== 'undefined') {
-                                        aiMessageDiv.innerHTML = marked.parse(fullText);
-                                    } else {
-                                        aiMessageDiv.textContent = fullText;
-                                    }
-
-                                    // 自動捲動
-                                    const chatMessages = document.getElementById('chat-messages');
-                                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                                }
-                            }
-                        } catch (e) {
-                            console.error('Parse error:', e, 'Line:', line);
-                        }
-                    }
-                }
+        const data = await response.json();
+        
+        if (data.reply) {
+            if (typeof marked !== 'undefined') {
+                aiMessageDiv.innerHTML = marked.parse(data.reply);
+            } else {
+                aiMessageDiv.textContent = data.reply;
             }
-            
-            // 如果沒有收到任何文字
-            if (!fullText) {
-                aiMessageDiv.innerHTML = '抱歉，我沒有收到回應。請再試一次！';
-            }
+        } else if (data.error) {
+            aiMessageDiv.innerHTML = '抱歉，發生錯誤：' + data.error;
         } else {
-            // 非 streaming 回應，直接讀取 JSON
-            const data = await response.json();
-            console.log('Non-streaming response:', data);
-            
-            if (data.reply) {
-                if (typeof marked !== 'undefined') {
-                    aiMessageDiv.innerHTML = marked.parse(data.reply);
-                } else {
-                    aiMessageDiv.textContent = data.reply;
-                }
-            } else if (data.error) {
-                aiMessageDiv.innerHTML = '抱歉，發生錯誤：' + data.error;
-            }
+            aiMessageDiv.innerHTML = '抱歉，我沒有收到回應。';
         }
 
     } catch (error) {

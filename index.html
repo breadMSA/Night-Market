@@ -164,17 +164,11 @@
         </div>
     </nav>
 
-    <!-- 主視覺 -->
-    <section class="relative h-screen flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <!-- Placeholder：請將圖片放在 images/hero-bg.jpg -->
-            <img src="https://via.placeholder.com/1920x1080/1a1a1a/ffff00?text=士林夜市+Shilin+Night+Market"
-                alt="士林夜市" class="w-full h-full object-cover opacity-60">
-            <div class="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent"></div>
-        </div>
-        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto mt-[-50px]">
-            <h1 class="font-neon text-5xl md:text-7xl mb-6 text-white text-glow animate-pulse">
-                士林夜市<br><span class="text-neonYellow text-glow-blue">大冒險</span>
+    <!-- 主視覺 Hero -->
+    <section id="hero" class="hero-bg min-h-screen flex items-center justify-center relative">
+        <div class="text-center z-10 px-4">
+            <h1 class="neon-text text-5xl md:text-7xl font-bold mb-6 pulse-neon">
+                士林夜市
             </h1>
             <p class="text-xl md:text-2xl mb-10 text-gray-300 font-light">
                 別再只吃雞排了！跟著<span class="text-neonPink font-bold">老王</span>，探索台北最生猛的夜生活。
@@ -194,8 +188,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div
                 class="bg-cardBg rounded-xl overflow-hidden hover:shadow-neon-pink transition-all duration-300 group border border-gray-800">
-                <div class="h-48 overflow-hidden bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                    <span class="text-8xl">🍗</span>
+                <div class="h-48 overflow-hidden">
+                    <img src="./images/chicken.jpg" 
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt="豪大大雞排">
                 </div>
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-2">
@@ -212,8 +208,10 @@
             <!-- 生煎包 -->
             <div
                 class="bg-cardBg rounded-xl overflow-hidden hover:shadow-neon-pink transition-all duration-300 group border border-gray-800">
-                <div class="h-48 overflow-hidden bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center">
-                    <span class="text-8xl">🥟</span>
+                <div class="h-48 overflow-hidden">
+                    <img src="./images/bao.jpg" 
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt="生煎包">
                 </div>
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-2">
@@ -230,8 +228,10 @@
             <!-- 蚵仔煎 -->
             <div
                 class="bg-cardBg rounded-xl overflow-hidden hover:shadow-neon-pink transition-all duration-300 group border border-gray-800">
-                <div class="h-48 overflow-hidden bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    <span class="text-8xl">🦪</span>
+                <div class="h-48 overflow-hidden">
+                    <img src="./images/oyster.jpg" 
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt="蚵仔煎">
                 </div>
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-2">
@@ -257,9 +257,9 @@
             <div class="space-y-20">
                 <div class="flex flex-col md:flex-row items-center gap-10">
                     <div class="w-full md:w-1/2">
-                        <div class="rounded-lg shadow-neon-blue transform -rotate-2 hover:rotate-0 transition-all duration-500 w-full h-64 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                            <span class="text-9xl">🎯</span>
-                        </div>
+                        <img src="./images/game.jpg" 
+                            alt="射氣球遊戲"
+                            class="rounded-lg shadow-neon-blue transform -rotate-2 hover:rotate-0 transition-all duration-500 w-full h-64 object-cover">
                     </div>
                     <div class="w-full md:w-1/2 text-left">
                         <h3 class="text-2xl font-bold text-neonBlue mb-4">復古射氣球 & 麻將賓果</h3>
@@ -271,9 +271,9 @@
                 </div>
                 <div class="flex flex-col md:flex-row-reverse items-center gap-10">
                     <div class="w-full md:w-1/2">
-                        <div class="rounded-lg shadow-neon-yellow transform rotate-2 hover:rotate-0 transition-all duration-500 w-full h-64 bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                            <span class="text-9xl">🍜</span>
-                        </div>
+                        <img src="./images/noodles.jpg" 
+                            alt="家鄉涼麵"
+                            class="rounded-lg shadow-neon-yellow transform rotate-2 hover:rotate-0 transition-all duration-500 w-full h-64 object-cover">
                     </div>
                     <div class="w-full md:w-1/2 text-left md:text-right">
                         <h3 class="text-2xl font-bold text-neonYellow mb-4">家鄉涼麵 (深夜限定)</h3>
