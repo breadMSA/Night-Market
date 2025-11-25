@@ -32,55 +32,91 @@ async function sendMessage() {
     aiMessageDiv.innerHTML = '<span class="animate-pulse">...</span>';
 
     try {
-        // TODO: 請將此 URL 替換為你的 Vercel 部署 URL
         const response = await fetch('https://night-market-cyan.vercel.app/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
         });
 
-        if (!response.ok) throw new Error('API 錯誤: ' + response.status);
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
 
-        // 3. 處理串流回應
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = '';
+        if (!response.ok) {
+            throw new Error('API 錯誤: ' + response.status);
+        }
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+        // 檢查是否為 streaming 回應
+        const contentType = response.headers.get('content-type');
+        console.log('Content-Type:', contentType);
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
+        if (contentType && contentType.includes('text/event-stream')) {
+            // 處理 SSE streaming
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = '';
 
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.slice(6));
-                        if (data.text) {
-                            fullText += data.text;
-                            
-                            // 使用 marked 解析 Markdown（確保已載入 marked.js）
-                            if (typeof marked !== 'undefined') {
-                                aiMessageDiv.innerHTML = marked.parse(fullText);
-                            } else {
-                                aiMessageDiv.textContent = fullText;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                console.log('Received chunk:', chunk);
+                
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const jsonStr = line.slice(6).trim();
+                            if (jsonStr) {
+                                const data = JSON.parse(jsonStr);
+                                console.log('Parsed data:', data);
+                                
+                                if (data.text) {
+                                    fullText += data.text;
+                                    
+                                    // 使用 marked 解析 Markdown
+                                    if (typeof marked !== 'undefined') {
+                                        aiMessageDiv.innerHTML = marked.parse(fullText);
+                                    } else {
+                                        aiMessageDiv.textContent = fullText;
+                                    }
+
+                                    // 自動捲動
+                                    const chatMessages = document.getElementById('chat-messages');
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
                             }
-
-                            // 自動捲動到最新訊息
-                            const chatMessages = document.getElementById('chat-messages');
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        } catch (e) {
+                            console.error('Parse error:', e, 'Line:', line);
                         }
-                    } catch (e) {
-                        // 忽略解析錯誤
                     }
                 }
+            }
+            
+            // 如果沒有收到任何文字
+            if (!fullText) {
+                aiMessageDiv.innerHTML = '抱歉，我沒有收到回應。請再試一次！';
+            }
+        } else {
+            // 非 streaming 回應，直接讀取 JSON
+            const data = await response.json();
+            console.log('Non-streaming response:', data);
+            
+            if (data.reply) {
+                if (typeof marked !== 'undefined') {
+                    aiMessageDiv.innerHTML = marked.parse(data.reply);
+                } else {
+                    aiMessageDiv.textContent = data.reply;
+                }
+            } else if (data.error) {
+                aiMessageDiv.innerHTML = '抱歉，發生錯誤：' + data.error;
             }
         }
 
     } catch (error) {
         console.error('發生錯誤:', error);
-        aiMessageDiv.innerHTML = '哎呀！老王現在有點忙（連線錯誤），請稍後再試！😅';
+        aiMessageDiv.innerHTML = '哎呀！老王現在有點忙（連線錯誤），請稍後再試！😅<br><small>錯誤：' + error.message + '</small>';
     }
 }
 

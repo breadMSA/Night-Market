@@ -93,11 +93,17 @@ export default async function handler(req, res) {
         const reader = geminiResponse.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let hasContent = false;
 
         try {
+            console.log('開始讀取 Gemini streaming...');
+            
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                if (done) {
+                    console.log('Streaming 完成');
+                    break;
+                }
 
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split('\n');
@@ -107,50 +113,51 @@ export default async function handler(req, res) {
 
                 for (const line of lines) {
                     const trimmed = line.trim();
-                    if (!trimmed || trimmed === ',') continue;
+                    if (!trimmed || trimmed === ',' || trimmed === '[' || trimmed === ']') continue;
                     
                     try {
-                        // Gemini streaming 回傳格式是直接的 JSON，不是 SSE 格式
+                        // 清理 JSON 字串
                         let jsonStr = trimmed;
-                        // 移除開頭的 [ 或結尾的 ]
-                        if (jsonStr.startsWith('[')) jsonStr = jsonStr.slice(1);
-                        if (jsonStr.endsWith(']')) jsonStr = jsonStr.slice(0, -1);
                         if (jsonStr.endsWith(',')) jsonStr = jsonStr.slice(0, -1);
-                        
-                        if (!jsonStr.trim()) continue;
                         
                         const data = JSON.parse(jsonStr);
                         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
                         
                         if (text) {
+                            console.log('發送文字片段:', text.substring(0, 50));
                             res.write(`data: ${JSON.stringify({ text })}\n\n`);
+                            hasContent = true;
                         }
                     } catch (e) {
-                        // 忽略解析錯誤
-                        console.error('Parse error:', e.message, 'Line:', trimmed.substring(0, 100));
+                        console.error('Parse error:', e.message);
+                        console.error('問題行:', trimmed.substring(0, 200));
                     }
                 }
             }
             
             // 處理剩餘的 buffer
-            if (buffer.trim()) {
+            if (buffer.trim() && buffer.trim() !== ']' && buffer.trim() !== '[') {
                 try {
                     let jsonStr = buffer.trim();
-                    if (jsonStr.startsWith('[')) jsonStr = jsonStr.slice(1);
-                    if (jsonStr.endsWith(']')) jsonStr = jsonStr.slice(0, -1);
                     if (jsonStr.endsWith(',')) jsonStr = jsonStr.slice(0, -1);
                     
-                    if (jsonStr.trim()) {
-                        const data = JSON.parse(jsonStr);
-                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (text) {
-                            res.write(`data: ${JSON.stringify({ text })}\n\n`);
-                        }
+                    const data = JSON.parse(jsonStr);
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) {
+                        console.log('發送最後的文字片段');
+                        res.write(`data: ${JSON.stringify({ text })}\n\n`);
+                        hasContent = true;
                     }
                 } catch (e) {
-                    // 忽略
+                    console.error('最後的 buffer 解析錯誤:', e.message);
                 }
             }
+            
+            if (!hasContent) {
+                console.error('警告：沒有產生任何內容！');
+                res.write(`data: ${JSON.stringify({ text: '抱歉，我現在有點累，請再問我一次！' })}\n\n`);
+            }
+            
         } finally {
             reader.releaseLock();
             res.end();
