@@ -1,96 +1,131 @@
-// AI 聊天功能
-let chatOpen = false;
+// AI 聊天功能 - 支援 Streaming 和 Markdown
 
-function openChat() {
-    const chatWindow = document.getElementById('chatWindow');
-    const chatButton = document.getElementById('chatButton');
-    chatWindow.classList.remove('hidden');
-    chatButton.style.display = 'none';
-    chatOpen = true;
-    document.getElementById('chatInput').focus();
-}
-
-function closeChat() {
-    const chatWindow = document.getElementById('chatWindow');
-    const chatButton = document.getElementById('chatButton');
-    chatWindow.classList.add('hidden');
-    chatButton.style.display = 'flex';
-    chatOpen = false;
-}
-
-function handleChatKeyPress(event) {
-    if (event.key === 'Enter') {
-        sendMessage();
+function toggleChat() {
+    const chatWindow = document.getElementById('chat-window');
+    if (chatWindow.classList.contains('hidden')) {
+        chatWindow.classList.remove('hidden');
+        chatWindow.classList.add('chat-slide-in');
+        document.getElementById('user-input').focus();
+    } else {
+        chatWindow.classList.add('hidden');
+        chatWindow.classList.remove('chat-slide-in');
     }
+}
+
+function quickAsk(msg) {
+    document.getElementById('user-input').value = msg;
+    sendMessage();
 }
 
 async function sendMessage() {
-    const input = document.getElementById('chatInput');
+    const input = document.getElementById('user-input');
     const message = input.value.trim();
-    
+
     if (!message) return;
-    
-    // 顯示用戶訊息
-    addMessage(message, 'user');
+
+    // 1. 顯示使用者訊息
+    appendMessage('user', message);
     input.value = '';
-    
-    // 顯示載入中
-    const loadingId = addMessage('正在思考...', 'bot', true);
-    
+
+    // 2. 建立 AI 訊息容器（用於 streaming）
+    const aiMessageDiv = appendMessageContainer('ai');
+    aiMessageDiv.innerHTML = '<span class="animate-pulse">...</span>';
+
     try {
-        // 發送到 Vercel Function
         // TODO: 請將此 URL 替換為你的 Vercel 部署 URL
-        const response = await fetch('https://night-market-cyan.vercel.app/api/chat', {
+        const response = await fetch('https://your-vercel-app.vercel.app/api/chat', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
         });
-        
-        if (!response.ok) {
-            throw new Error('API 請求失敗');
+
+        if (!response.ok) throw new Error('API 錯誤: ' + response.status);
+
+        // 3. 處理串流回應
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.text) {
+                            fullText += data.text;
+                            
+                            // 使用 marked 解析 Markdown（確保已載入 marked.js）
+                            if (typeof marked !== 'undefined') {
+                                aiMessageDiv.innerHTML = marked.parse(fullText);
+                            } else {
+                                aiMessageDiv.textContent = fullText;
+                            }
+
+                            // 自動捲動到最新訊息
+                            const chatMessages = document.getElementById('chat-messages');
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                    } catch (e) {
+                        // 忽略解析錯誤
+                    }
+                }
+            }
         }
-        
-        const data = await response.json();
-        
-        // 移除載入訊息，顯示回覆
-        removeMessage(loadingId);
-        addMessage(data.reply || '抱歉，我無法理解你的問題。', 'bot');
-        
+
     } catch (error) {
-        console.error('Error:', error);
-        removeMessage(loadingId);
-        addMessage('抱歉，服務暫時無法使用，請稍後再試。', 'bot');
+        console.error('發生錯誤:', error);
+        aiMessageDiv.innerHTML = '哎呀！老王現在有點忙（連線錯誤），請稍後再試！😅';
     }
 }
 
-function addMessage(text, sender, isLoading = false) {
-    const messagesContainer = document.getElementById('chatMessages');
-    const messageId = 'msg-' + Date.now() + '-' + Math.random();
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.id = messageId;
-    messageDiv.className = `rounded-lg p-3 ${
-        sender === 'user' 
-            ? 'bg-yellow-400 text-black ml-auto max-w-[80%]' 
-            : 'bg-gray-800 text-gray-300 max-w-[80%]'
-    }`;
-    
-    messageDiv.innerHTML = `<p>${isLoading ? '<span class="animate-pulse">' + text + '</span>' : text}</p>`;
-    
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    return messageId;
+// 輔助函式：建立訊息容器（返回內容 div 以便後續更新）
+function appendMessageContainer(sender) {
+    const chatMessages = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'flex items-start gap-2';
+
+    div.innerHTML = `
+        <div class="w-8 h-8 bg-neonPink rounded-full flex-shrink-0 flex items-center justify-center text-black font-bold text-xs">王</div>
+        <div class="bg-gray-800 text-gray-200 p-3 rounded-r-lg rounded-bl-lg text-sm border border-gray-700 max-w-[90%] prose"></div>
+    `;
+
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    return div.querySelector('.prose'); // 返回內容容器
 }
 
-function removeMessage(messageId) {
-    const message = document.getElementById(messageId);
-    if (message) {
-        message.remove();
+// 輔助函式：顯示使用者訊息
+function appendMessage(sender, text) {
+    const chatMessages = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = sender === 'user' ? 'flex justify-end' : 'flex items-start gap-2';
+
+    if (sender === 'user') {
+        div.innerHTML = `<div class="bg-neonPink text-black p-3 rounded-l-lg rounded-br-lg text-sm font-bold max-w-[80%]">${text}</div>`;
     }
+
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+// Enter 鍵發送
+document.addEventListener('DOMContentLoaded', function() {
+    const userInput = document.getElementById('user-input');
+    if (userInput) {
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    }
+});
 
 // 平滑滾動
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -105,14 +140,3 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
-
-// 響應式導覽列
-window.addEventListener('scroll', function() {
-    const nav = document.querySelector('nav');
-    if (window.scrollY > 100) {
-        nav.classList.add('shadow-lg');
-    } else {
-        nav.classList.remove('shadow-lg');
-    }
-});
-
