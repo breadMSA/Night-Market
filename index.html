@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>士林夜市 - AI 導遊夜市介紹</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-yellow: #FFFF00;
+            --neon-pink: #FF00FF;
+            --neon-cyan: #00FFFF;
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .neon-text {
+            font-family: 'Kalam', cursive;
+            text-shadow: 
+                0 0 10px var(--neon-yellow),
+                0 0 20px var(--neon-yellow),
+                0 0 30px var(--neon-yellow);
+            color: var(--neon-yellow);
+        }
+        
+        .neon-pink {
+            color: var(--neon-pink);
+            text-shadow: 
+                0 0 10px var(--neon-pink),
+                0 0 20px var(--neon-pink);
+        }
+        
+        .neon-cyan {
+            color: var(--neon-cyan);
+            text-shadow: 
+                0 0 10px var(--neon-cyan),
+                0 0 20px var(--neon-cyan);
+        }
+        
+        .neon-border {
+            border: 2px solid var(--neon-yellow);
+            box-shadow: 
+                0 0 10px var(--neon-yellow),
+                inset 0 0 10px var(--neon-yellow);
+        }
+        
+        .neon-button {
+            background: transparent;
+            border: 2px solid var(--neon-yellow);
+            color: var(--neon-yellow);
+            box-shadow: 
+                0 0 10px var(--neon-yellow),
+                inset 0 0 10px rgba(255, 255, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .neon-button:hover {
+            background: var(--neon-yellow);
+            color: #000;
+            box-shadow: 
+                0 0 20px var(--neon-yellow),
+                0 0 30px var(--neon-yellow),
+                inset 0 0 20px rgba(255, 255, 0, 0.3);
+        }
+        
+        .food-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .food-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 
+                0 10px 30px rgba(255, 255, 0, 0.3),
+                0 0 20px rgba(255, 0, 255, 0.2);
+        }
+        
+        .chat-window {
+            transition: transform 0.3s ease;
+        }
+        
+        .chat-window.hidden {
+            transform: translateX(100%);
+        }
+        
+        .hero-bg {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)),
+                        url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1920') center/cover;
+        }
+        
+        @keyframes pulse-neon {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .pulse-neon {
+            animation: pulse-neon 2s ease-in-out infinite;
+        }
+        
+        .zigzag-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <!-- 導覽列 -->
+    <nav class="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-sm border-b-2 border-yellow-400">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="neon-text text-2xl font-bold">士林夜市</div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#hero" class="hover:text-yellow-400 transition">首頁</a>
+                    <a href="#food" class="hover:text-yellow-400 transition">必吃美食</a>
+                    <a href="#fun" class="hover:text-yellow-400 transition">特色攤位</a>
+                    <a href="#map" class="hover:text-yellow-400 transition">交通資訊</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主視覺 Hero -->
+    <section id="hero" class="hero-bg min-h-screen flex items-center justify-center relative">
+        <div class="text-center z-10 px-4">
+            <h1 class="neon-text text-5xl md:text-7xl font-bold mb-6 pulse-neon">
+                士林夜市
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-yellow-300">探索最道地的台灣夜市文化</p>
+            <button onclick="openChat()" class="neon-button px-8 py-4 text-lg font-bold rounded-lg">
+                詢問在地嚮導
+            </button>
+        </div>
+    </section>
+
+    <!-- 必吃美食 -->
+    <section id="food" class="py-20 px-4 bg-gradient-to-b from-black to-gray-900">
+        <div class="container mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12 neon-text">必吃美食</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 美食卡片 1 -->
+                <div class="food-card bg-gray-900 rounded-lg overflow-hidden neon-border p-6">
+                    <div class="w-full h-48 bg-gradient-to-br from-yellow-400 to-orange-500 mb-4 rounded-lg flex items-center justify-center text-6xl">
+                        🍗
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 neon-cyan">豪大大雞排</h3>
+                    <p class="text-gray-400 mb-3">超大份量，外酥內嫩</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-yellow-400 font-bold">NT$ 70</span>
+                        <div class="flex text-yellow-400">
+                            ★★★★★
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美食卡片 2 -->
+                <div class="food-card bg-gray-900 rounded-lg overflow-hidden neon-border p-6">
+                    <div class="w-full h-48 bg-gradient-to-br from-red-400 to-pink-500 mb-4 rounded-lg flex items-center justify-center text-6xl">
+                        🦪
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 neon-cyan">蚵仔煎</h3>
+                    <p class="text-gray-400 mb-3">新鮮蚵仔配特製醬料</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-yellow-400 font-bold">NT$ 60</span>
+                        <div class="flex text-yellow-400">
+                            ★★★★★
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美食卡片 3 -->
+                <div class="food-card bg-gray-900 rounded-lg overflow-hidden neon-border p-6">
+                    <div class="w-full h-48 bg-gradient-to-br from-purple-400 to-indigo-500 mb-4 rounded-lg flex items-center justify-center text-6xl">
+                        🧋
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 neon-cyan">珍珠奶茶</h3>
+                    <p class="text-gray-400 mb-3">經典台灣飲品</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-yellow-400 font-bold">NT$ 50</span>
+                        <div class="flex text-yellow-400">
+                            ★★★★☆
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美食卡片 4 -->
+                <div class="food-card bg-gray-900 rounded-lg overflow-hidden neon-border p-6">
+                    <div class="w-full h-48 bg-gradient-to-br from-green-400 to-teal-500 mb-4 rounded-lg flex items-center justify-center text-6xl">
+                        🥟
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 neon-cyan">生煎包</h3>
+                    <p class="text-gray-400 mb-3">皮薄餡多，湯汁飽滿</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-yellow-400 font-bold">NT$ 45</span>
+                        <div class="flex text-yellow-400">
+                            ★★★★☆
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美食卡片 5 -->
+                <div class="food-card bg-gray-900 rounded-lg overflow-hidden neon-border p-6">
+                    <div class="w-full h-48 bg-gradient-to-br from-orange-400 to-red-500 mb-4 rounded-lg flex items-center justify-center text-6xl">
+                        🍢
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 neon-cyan">串燒</h3>
+                    <p class="text-gray-400 mb-3">多種選擇，現烤現吃</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-yellow-400 font-bold">NT$ 30-50</span>
+                        <div class="flex text-yellow-400">
+                            ★★★★☆
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美食卡片 6 -->
+                <div class="food-card bg-gray-900 rounded-lg overflow-hidden neon-border p-6">
+                    <div class="w-full h-48 bg-gradient-to-br from-yellow-300 to-amber-500 mb-4 rounded-lg flex items-center justify-center text-6xl">
+                        🥞
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 neon-cyan">蔥油餅</h3>
+                    <p class="text-gray-400 mb-3">酥脆外皮，香氣四溢</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-yellow-400 font-bold">NT$ 35</span>
+                        <div class="flex text-yellow-400">
+                            ★★★★☆
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 遊戲娛樂 + 特色攤位 -->
+    <section id="fun" class="py-20 px-4 bg-gradient-to-b from-gray-900 to-black">
+        <div class="container mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12 neon-text">特色攤位 & 遊戲</h2>
+            
+            <!-- 特色攤位項目 -->
+            <div class="space-y-12 mb-16">
+                <!-- 攤位 1 -->
+                <div class="zigzag-item flex flex-col md:flex-row items-center gap-8 bg-gray-900 rounded-lg p-6 neon-border">
+                    <div class="w-full md:w-1/2 h-64 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center text-8xl">
+                        🎯
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-3xl font-bold mb-4 neon-pink">射氣球攤</h3>
+                        <p class="text-gray-300 mb-4">經典夜市遊戲，考驗你的準度！射中氣球就能獲得可愛玩偶，是親子同樂的好選擇。</p>
+                        <p class="text-yellow-400 font-semibold">價格：NT$ 50 / 局</p>
+                    </div>
+                </div>
+
+                <!-- 攤位 2 -->
+                <div class="zigzag-item flex flex-col md:flex-row items-center gap-8 bg-gray-900 rounded-lg p-6 neon-border">
+                    <div class="w-full md:w-1/2 h-64 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center text-8xl">
+                        🎨
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-3xl font-bold mb-4 neon-cyan">手工藝品攤</h3>
+                        <p class="text-gray-300 mb-4">巷仔內才知道的隱藏版攤位！販售獨特的手工飾品和紀念品，每一件都是獨一無二的藝術品。</p>
+                        <p class="text-yellow-400 font-semibold">價格：NT$ 100-500</p>
+                    </div>
+                </div>
+
+                <!-- 攤位 3 -->
+                <div class="zigzag-item flex flex-col md:flex-row items-center gap-8 bg-gray-900 rounded-lg p-6 neon-border">
+                    <div class="w-full md:w-1/2 h-64 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center text-8xl">
+                        🧃
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-3xl font-bold mb-4 neon-cyan">古早味飲品</h3>
+                        <p class="text-gray-300 mb-4">傳統台灣飲料，如青草茶、冬瓜茶等，清涼解渴，是逛夜市的最佳伴手。</p>
+                        <p class="text-yellow-400 font-semibold">價格：NT$ 30-50</p>
+                    </div>
+                </div>
+
+                <!-- 攤位 4 -->
+                <div class="zigzag-item flex flex-col md:flex-row items-center gap-8 bg-gray-900 rounded-lg p-6 neon-border">
+                    <div class="w-full md:w-1/2 h-64 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-8xl">
+                        🎲
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-3xl font-bold mb-4 neon-pink">麻將賓果</h3>
+                        <p class="text-gray-300 mb-4">傳統的夜市遊戲，考驗運氣和策略，連成一線就能獲得獎品！</p>
+                        <p class="text-yellow-400 font-semibold">價格：NT$ 50 / 局</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 交通/地圖 -->
+    <section id="map" class="py-20 px-4 bg-black">
+        <div class="container mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12 neon-text">交通資訊</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-gray-900 rounded-lg p-8 neon-border">
+                    <h3 class="text-2xl font-bold mb-6 neon-cyan">地址</h3>
+                    <p class="text-lg mb-6">台北市士林區基河路101號</p>
+                    
+                    <h3 class="text-2xl font-bold mb-4 neon-cyan mt-8">大眾運輸</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start">
+                            <span class="text-yellow-400 mr-2">🚇</span>
+                            <div>
+                                <strong>捷運：</strong>劍潭站 1號出口，步行約3分鐘
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-yellow-400 mr-2">🚌</span>
+                            <div>
+                                <strong>公車：</strong>多線公車可達，站名「士林夜市」
+                            </div>
+                        </li>
+                    </ul>
+                    
+                    <h3 class="text-2xl font-bold mb-4 neon-cyan mt-8">停車資訊</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>• 士林市場地下停車場（基河路）</li>
+                        <li>• 中正路停車場</li>
+                        <li>• 建議使用大眾運輸，避免停車困擾</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gray-900 rounded-lg p-8 neon-border">
+                    <h3 class="text-2xl font-bold mb-6 neon-cyan">地圖</h3>
+                    <div class="w-full h-96 bg-gray-800 rounded-lg flex items-center justify-center border-2 border-yellow-400">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.5!2d121.524!3d25.088!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442ac6b61dbbd8b%3A0x1e0a4c8b8b8b8b8b!2z5LiJ5rW35rKz5ZyL5a625p6X!5e0!3m2!1szh-TW!2stw!4v1234567890"
+                            width="100%" 
+                            height="100%" 
+                            style="border:0;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade"
+                            class="rounded-lg"
+                            title="士林夜市地圖">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI 聊天介面 -->
+    <div id="chatButton" onclick="openChat()" class="fixed bottom-6 right-6 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform z-40">
+        <span class="text-3xl">💬</span>
+    </div>
+
+    <div id="chatWindow" class="chat-window hidden fixed bottom-24 right-6 w-96 h-[600px] bg-gray-900 rounded-lg neon-border z-50 flex flex-col">
+        <div class="bg-gray-800 p-4 rounded-t-lg flex items-center justify-between border-b-2 border-yellow-400">
+            <h3 class="text-xl font-bold neon-cyan">AI 在地嚮導</h3>
+            <button onclick="closeChat()" class="text-white hover:text-yellow-400 text-2xl">&times;</button>
+        </div>
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="bg-gray-800 rounded-lg p-3">
+                <p class="text-gray-300">👋 你好！我是士林夜市的AI導遊，有什麼問題都可以問我！</p>
+            </div>
+        </div>
+        <div class="p-4 border-t-2 border-yellow-400">
+            <div class="flex gap-2">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    placeholder="輸入你的問題..."
+                    class="flex-1 bg-gray-800 text-white px-4 py-2 rounded-lg border border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    onkeypress="handleChatKeyPress(event)"
+                >
+                <button 
+                    onclick="sendMessage()" 
+                    class="neon-button px-4 py-2 rounded-lg font-bold"
+                >
+                    送出
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="bg-black py-8 px-4 border-t-2 border-yellow-400">
+        <div class="container mx-auto text-center text-gray-400">
+            <p>&copy; 2024 士林夜市導覽網站</p>
+            <p class="mt-2 text-sm">技術支持：Vercel & Gemini AI</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

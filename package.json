@@ -1,0 +1,18 @@
+{
+  "name": "night-market-website",
+  "version": "1.0.0",
+  "description": "士林夜市 AI 導遊一頁式網站",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "night-market",
+    "taiwan",
+    "ai",
+    "tour-guide"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
