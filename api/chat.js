@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
         const fullPrompt = `${systemPrompt}\n\n遊客問題：${message}\n\n請回答：`;
 
-        // 調用 Gemini API (使用 streaming)
+        // 調用 Gemini API (使用 streaming) 並啟用 Google Search grounding
         const geminiResponse = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${apiKey}`,
             {
@@ -69,6 +69,9 @@ export default async function handler(req, res) {
                         parts: [{
                             text: fullPrompt
                         }]
+                    }],
+                    tools: [{
+                        googleSearch: {}
                     }]
                 })
             }
@@ -86,7 +89,7 @@ export default async function handler(req, res) {
         res.setHeader('Connection', 'keep-alive');
         res.setHeader('X-Accel-Buffering', 'no'); // 禁用 Nginx 緩衝
 
-        // 讀取並轉發 stream
+        // 讀取並轉發 stream - Gemini 回傳的是換行分隔的 JSON
         const reader = geminiResponse.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
@@ -103,43 +106,49 @@ export default async function handler(req, res) {
                 buffer = lines.pop() || '';
 
                 for (const line of lines) {
-                    if (line.trim() === '') continue;
+                    const trimmed = line.trim();
+                    if (!trimmed || trimmed === ',') continue;
                     
-                    if (line.startsWith('data: ')) {
-                        try {
-                            const jsonStr = line.slice(6);
-                            if (jsonStr.trim() === '[DONE]') {
-                                res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-                                continue;
-                            }
-                            
-                            const data = JSON.parse(jsonStr);
-                            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                            
-                            if (text) {
-                                res.write(`data: ${JSON.stringify({ text })}\n\n`);
-                            }
-                        } catch (e) {
-                            // 忽略解析錯誤，繼續處理下一行
-                            console.error('Parse error:', e.message);
+                    try {
+                        // Gemini streaming 回傳格式是直接的 JSON，不是 SSE 格式
+                        let jsonStr = trimmed;
+                        // 移除開頭的 [ 或結尾的 ]
+                        if (jsonStr.startsWith('[')) jsonStr = jsonStr.slice(1);
+                        if (jsonStr.endsWith(']')) jsonStr = jsonStr.slice(0, -1);
+                        if (jsonStr.endsWith(',')) jsonStr = jsonStr.slice(0, -1);
+                        
+                        if (!jsonStr.trim()) continue;
+                        
+                        const data = JSON.parse(jsonStr);
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        
+                        if (text) {
+                            res.write(`data: ${JSON.stringify({ text })}\n\n`);
                         }
+                    } catch (e) {
+                        // 忽略解析錯誤
+                        console.error('Parse error:', e.message, 'Line:', trimmed.substring(0, 100));
                     }
                 }
             }
             
             // 處理剩餘的 buffer
             if (buffer.trim()) {
-                if (buffer.startsWith('data: ')) {
-                    try {
-                        const jsonStr = buffer.slice(6);
+                try {
+                    let jsonStr = buffer.trim();
+                    if (jsonStr.startsWith('[')) jsonStr = jsonStr.slice(1);
+                    if (jsonStr.endsWith(']')) jsonStr = jsonStr.slice(0, -1);
+                    if (jsonStr.endsWith(',')) jsonStr = jsonStr.slice(0, -1);
+                    
+                    if (jsonStr.trim()) {
                         const data = JSON.parse(jsonStr);
                         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
                         if (text) {
                             res.write(`data: ${JSON.stringify({ text })}\n\n`);
                         }
-                    } catch (e) {
-                        // 忽略
                     }
+                } catch (e) {
+                    // 忽略
                 }
             }
         } finally {

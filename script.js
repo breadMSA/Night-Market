@@ -140,3 +140,102 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// ========== Google Maps 控制功能 ==========
+
+// 士林夜市座標
+const SHILIN_LAT = 25.0878018;
+const SHILIN_LNG = 121.5240855;
+
+// 重新定位到士林夜市
+function resetMapToShilin() {
+    const mapFrame = document.getElementById('mapFrame');
+    // 更新 iframe src 重新載入地圖，聚焦士林夜市
+    mapFrame.src = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.4969287885047!2d${SHILIN_LNG}!3d${SHILIN_LAT}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a910ff8124b1%3A0x352897c38223de95!2z5aOr5p6X5aSc5biC!5e0!3m2!1szh-TW!2stw!4v${Date.now()}!5m2!1szh-TW!2stw`;
+}
+
+// 規劃路線（在新視窗開啟 Google Maps 路線規劃）
+function planRoute() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                // 開啟 Google Maps 路線規劃
+                const url = `https://www.google.com/maps/dir/${lat},${lng}/${SHILIN_LAT},${SHILIN_LNG}`;
+                window.open(url, '_blank');
+            },
+            (error) => {
+                // 如果無法取得位置，直接開啟士林夜市的地圖
+                const url = `https://www.google.com/maps/dir//${SHILIN_LAT},${SHILIN_LNG}`;
+                window.open(url, '_blank');
+                console.error('無法取得位置:', error);
+            }
+        );
+    } else {
+        // 瀏覽器不支援地理定位，直接開啟地圖
+        const url = `https://www.google.com/maps/dir//${SHILIN_LAT},${SHILIN_LNG}`;
+        window.open(url, '_blank');
+    }
+}
+
+// 計算並顯示距離
+function showDistance() {
+    const distanceBtn = document.getElementById('distanceBtn');
+    
+    if (navigator.geolocation) {
+        distanceBtn.textContent = '📍 計算中...';
+        distanceBtn.disabled = true;
+        
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                // 計算直線距離（使用 Haversine 公式）
+                const distance = calculateDistance(lat, lng, SHILIN_LAT, SHILIN_LNG);
+                
+                if (distance < 1) {
+                    distanceBtn.textContent = `📍 ${Math.round(distance * 1000)}m`;
+                } else {
+                    distanceBtn.textContent = `📍 ${distance.toFixed(1)}km`;
+                }
+                
+                distanceBtn.disabled = false;
+                
+                // 5秒後恢復原本文字
+                setTimeout(() => {
+                    distanceBtn.textContent = '📍 距離';
+                }, 5000);
+            },
+            (error) => {
+                distanceBtn.textContent = '📍 無法定位';
+                distanceBtn.disabled = false;
+                console.error('無法取得位置:', error);
+                
+                setTimeout(() => {
+                    distanceBtn.textContent = '📍 距離';
+                }, 3000);
+            }
+        );
+    } else {
+        alert('您的瀏覽器不支援地理定位功能');
+    }
+}
+
+// Haversine 公式計算兩點間距離（公里）
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // 地球半徑（公里）
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+function toRad(degrees) {
+    return degrees * (Math.PI / 180);
+}

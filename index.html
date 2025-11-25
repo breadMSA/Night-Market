@@ -133,8 +133,8 @@
     <!-- 主視覺 -->
     <section class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1552554625-5e60d5c31270?q=80&w=2574&auto=format&fit=crop"
-                alt="Night Market" class="w-full h-full object-cover opacity-60">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Shilin_Night_Market_Entrance_2019.jpg/1920px-Shilin_Night_Market_Entrance_2019.jpg"
+                alt="士林夜市" class="w-full h-full object-cover opacity-60">
             <div class="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent"></div>
         </div>
         <div class="relative z-10 text-center px-4 max-w-4xl mx-auto mt-[-50px]">
@@ -160,7 +160,7 @@
             <div
                 class="bg-cardBg rounded-xl overflow-hidden hover:shadow-neon-pink transition-all duration-300 group border border-gray-800">
                 <div class="h-48 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=1000&auto=format&fit=crop"
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Large_Chicken_Fillet.jpg/800px-Large_Chicken_Fillet.jpg"
                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         alt="雞排">
                 </div>
@@ -180,7 +180,7 @@
             <div
                 class="bg-cardBg rounded-xl overflow-hidden hover:shadow-neon-pink transition-all duration-300 group border border-gray-800">
                 <div class="h-48 overflow-hidden">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shengjian_mantou_01.jpg/800px-Shengjian_mantou_01.jpg"
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Shengjian_Mantou_Street.jpg/800px-Shengjian_Mantou_Street.jpg"
                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         alt="生煎包">
                 </div>
@@ -200,7 +200,7 @@
             <div
                 class="bg-cardBg rounded-xl overflow-hidden hover:shadow-neon-pink transition-all duration-300 group border border-gray-800">
                 <div class="h-48 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1605218427360-1de983226db9?q=80&w=1000&auto=format&fit=crop"
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Oyster_omelette_1.jpg/800px-Oyster_omelette_1.jpg"
                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         alt="蚵仔煎">
                 </div>
@@ -228,8 +228,8 @@
             <div class="space-y-20">
                 <div class="flex flex-col md:flex-row items-center gap-10">
                     <div class="w-full md:w-1/2">
-                        <img src="https://images.unsplash.com/photo-1570535384666-41804d026330?q=80&w=1000&auto=format&fit=crop"
-                            alt="Balloon Shooting"
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Taiwan_night_market_games.jpg/800px-Taiwan_night_market_games.jpg"
+                            alt="夜市遊戲"
                             class="rounded-lg shadow-neon-blue transform -rotate-2 hover:rotate-0 transition-all duration-500 w-full h-64 object-cover">
                     </div>
                     <div class="w-full md:w-1/2 text-left">
@@ -242,8 +242,8 @@
                 </div>
                 <div class="flex flex-col md:flex-row-reverse items-center gap-10">
                     <div class="w-full md:w-1/2">
-                        <img src="https://images.unsplash.com/photo-1596450523479-78f7aee44964?q=80&w=1000&auto=format&fit=crop"
-                            alt="Cold Noodles"
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Taiwan_Night_Market_Street_Food.jpg/800px-Taiwan_Night_Market_Street_Food.jpg"
+                            alt="夜市小吃"
                             class="rounded-lg shadow-neon-yellow transform rotate-2 hover:rotate-0 transition-all duration-500 w-full h-64 object-cover">
                     </div>
                     <div class="w-full md:w-1/2 text-left md:text-right">
@@ -273,13 +273,52 @@
                 <p class="text-sm text-gray-500 mt-2">假日容易客滿，建議停在百齡高中地下停車場。</p>
             </div>
         </div>
-        <div
-            class="w-full h-64 md:h-96 bg-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <p class="text-neonYellow text-xl border-2 border-neonYellow px-6 py-2 rounded">Google Map 嵌入區</p>
+        <div class="w-full h-64 md:h-96 bg-gray-700 rounded-lg relative overflow-hidden">
+            <!-- Google Map -->
+            <iframe 
+                id="mapFrame"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.4969287885047!2d121.52166287616758!3d25.08780183587994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a910ff8124b1%3A0x352897c38223de95!2z5aOr5p6X5aSc5biC!5e0!3m2!1szh-TW!2stw!4v1732559000000!5m2!1szh-TW!2stw"
+                width="100%" 
+                height="100%" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade"
+                class="rounded-lg">
+            </iframe>
+            
+            <!-- 控制按鈕組 -->
+            <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                <!-- 重新定位到士林夜市 -->
+                <button 
+                    onclick="resetMapToShilin()"
+                    class="bg-neonPink hover:bg-white text-black font-bold p-3 rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center group"
+                    title="回到士林夜市">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+                
+                <!-- 規劃路線 -->
+                <button 
+                    onclick="planRoute()"
+                    class="bg-neonBlue hover:bg-white text-black font-bold p-3 rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center group"
+                    title="規劃路線">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                </button>
+                
+                <!-- 顯示距離 -->
+                <button 
+                    id="distanceBtn"
+                    onclick="showDistance()"
+                    class="bg-neonYellow hover:bg-white text-black font-bold px-3 py-2 rounded-lg shadow-lg transition-all duration-300 text-sm whitespace-nowrap"
+                    title="計算距離">
+                    📍 距離
+                </button>
             </div>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Shilin_Night_Market_Entrance_2019.jpg/1200px-Shilin_Night_Market_Entrance_2019.jpg"
-                class="w-full h-full object-cover opacity-30" alt="Map Preview">
         </div>
     </section>
 
