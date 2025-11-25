@@ -33,7 +33,7 @@ async function sendMessage() {
 
     try {
         // TODO: 請將此 URL 替換為你的 Vercel 部署 URL
-        const response = await fetch('https://your-vercel-app.vercel.app/api/chat', {
+        const response = await fetch('https://night-market-cyan.vercel.app/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
