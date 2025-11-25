@@ -2,6 +2,16 @@
 // 這個函數會代理請求到 Gemini API
 
 export default async function handler(req, res) {
+    // 處理 CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    // 處理 OPTIONS 預檢請求
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
     // 只允許 POST 請求
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
