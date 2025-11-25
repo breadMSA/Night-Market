@@ -2,25 +2,41 @@
 // 這個函數會代理請求到 Gemini API
 
 export default async function handler(req, res) {
-    // 處理 CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    // 處理 CORS - 必須在所有回應之前設置
+    const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+    };
+    
+    // 設置 CORS 頭
+    Object.keys(corsHeaders).forEach(key => {
+        res.setHeader(key, corsHeaders[key]);
+    });
     
     // 處理 OPTIONS 預檢請求
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
     
+    // 輔助函數：設置 CORS 並返回錯誤
+    const sendError = (status, error) => {
+        Object.keys(corsHeaders).forEach(key => {
+            res.setHeader(key, corsHeaders[key]);
+        });
+        return res.status(status).json({ error });
+    };
+    
     // 只允許 POST 請求
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return sendError(405, 'Method not allowed');
     }
 
     const { message } = req.body;
 
     if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
+        return sendError(400, 'Message is required');
     }
 
     try {
@@ -29,7 +45,7 @@ export default async function handler(req, res) {
         
         if (!apiKey) {
             console.error('GEMINI_API_KEY is not set');
-            return res.status(500).json({ error: 'API key not configured' });
+            return sendError(500, 'API key not configured');
         }
 
         // 構建提示詞，讓 AI 扮演士林夜市的導遊「老王」
@@ -61,13 +77,14 @@ export default async function handler(req, res) {
         if (!geminiResponse.ok) {
             const errorData = await geminiResponse.text();
             console.error('Gemini API error:', errorData);
-            return res.status(500).json({ error: 'AI service error' });
+            return sendError(500, 'AI service error');
         }
 
-        // 設定 streaming 回應
+        // 設定 streaming 回應（CORS 頭已在前面設置）
         res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
         res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no'); // 禁用 Nginx 緩衝
 
         // 讀取並轉發 stream
         const reader = geminiResponse.body.getReader();
@@ -132,10 +149,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Error in chat handler:', error);
-        return res.status(500).json({ 
-            error: 'Internal server error',
-            reply: '抱歉，服務暫時無法使用，請稍後再試。'
-        });
+        return sendError(500, 'Internal server error');
     }
 }
 
