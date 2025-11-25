@@ -56,10 +56,9 @@ export default async function handler(req, res) {
 
         const fullPrompt = `${systemPrompt}\n\n遊客問題：${message}\n\n請回答：`;
 
-        // 調用 Gemini API (使用 streaming)
-        // 注意：grounding 功能在 streaming 模式下可能不穩定，先使用基本模式
+        // 調用 Gemini API (使用穩定的 1.5 模型)
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:streamGenerateContent?alt=sse&key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {
@@ -75,7 +74,25 @@ export default async function handler(req, res) {
                         temperature: 0.9,
                         topP: 0.95,
                         maxOutputTokens: 1024,
-                    }
+                    },
+                    safetySettings: [
+                        {
+                            category: "HARM_CATEGORY_HARASSMENT",
+                            threshold: "BLOCK_NONE"
+                        },
+                        {
+                            category: "HARM_CATEGORY_HATE_SPEECH",
+                            threshold: "BLOCK_NONE"
+                        },
+                        {
+                            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                            threshold: "BLOCK_NONE"
+                        },
+                        {
+                            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                            threshold: "BLOCK_NONE"
+                        }
+                    ]
                 })
             }
         );
