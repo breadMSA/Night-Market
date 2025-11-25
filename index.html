@@ -104,6 +104,40 @@
             margin-bottom: 0.8rem;
             line-height: 1.6;
         }
+        
+        /* 打字中動畫 */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #ff00ff;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
@@ -133,7 +167,8 @@
     <!-- 主視覺 -->
     <section class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0f/d4/2e/6c/caption.jpg?w=1200&h=-1&s=1"
+            <!-- Placeholder：請將圖片放在 images/hero-bg.jpg -->
+            <img src="https://via.placeholder.com/1920x1080/1a1a1a/ffff00?text=士林夜市+Shilin+Night+Market"
                 alt="士林夜市" class="w-full h-full object-cover opacity-60">
             <div class="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent"></div>
         </div>
@@ -346,7 +381,12 @@
                     <p class="text-xs text-green-400">● 線上中</p>
                 </div>
             </div>
-            <button onclick="toggleChat()" class="text-gray-400 hover:text-white">✕</button>
+            <div class="flex items-center gap-2">
+                <button onclick="clearChat()" class="text-gray-400 hover:text-neonYellow text-xl" title="清除對話">
+                    🗑️
+                </button>
+                <button onclick="toggleChat()" class="text-gray-400 hover:text-white text-xl">✕</button>
+            </div>
         </div>
 
         <div id="chat-messages" class="flex-1 p-4 overflow-y-auto scrollbar-hide space-y-4">
@@ -361,19 +401,28 @@
         </div>
 
         <div class="p-4 bg-gray-800 rounded-b-2xl border-t border-gray-700">
-            <div class="flex gap-2">
-                <input type="text" id="user-input" placeholder="問老王：雞排要排很久嗎？"
-                    class="flex-1 bg-gray-900 text-white text-sm rounded-full px-4 py-2 border border-gray-600 focus:outline-none focus:border-neonPink">
+            <div class="flex gap-2 relative">
+                <input type="text" id="user-input" placeholder="問老王：雞排要排很久嗎？" maxlength="200"
+                    class="flex-1 bg-gray-900 text-white text-sm rounded-full px-4 py-2 border border-gray-600 focus:outline-none focus:border-neonPink"
+                    oninput="updateCharCount()">
                 <button onclick="sendMessage()"
-                    class="bg-neonPink text-black rounded-full w-10 h-10 flex items-center justify-center font-bold hover:bg-white transition-colors">➤</button>
+                    class="bg-neonPink text-black rounded-full w-10 h-10 flex items-center justify-center font-bold hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">➤</button>
+            </div>
+            <div class="flex justify-between items-center mt-1 px-2">
+                <span class="text-xs text-gray-500">按 Enter 發送</span>
+                <span id="charCount" class="text-xs text-gray-500">0/200</span>
             </div>
             <div class="flex gap-2 mt-3 overflow-x-auto scrollbar-hide">
                 <button onclick="quickAsk('必吃推薦')"
-                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-gray-600">必吃推薦</button>
+                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-neonPink hover:text-black transition-colors">必吃推薦</button>
                 <button onclick="quickAsk('廁所在哪')"
-                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-gray-600">廁所在哪</button>
+                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-neonBlue hover:text-black transition-colors">廁所在哪</button>
                 <button onclick="quickAsk('下雨怎辦')"
-                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-gray-600">下雨怎辦</button>
+                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-neonYellow hover:text-black transition-colors">下雨怎辦</button>
+                <button onclick="quickAsk('推薦路線')"
+                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-neonPink hover:text-black transition-colors">推薦路線</button>
+                <button onclick="quickAsk('營業時間')"
+                    class="bg-gray-700 text-xs text-gray-300 px-3 py-1 rounded-full hover:bg-neonBlue hover:text-black transition-colors">營業時間</button>
             </div>
         </div>
     </div>

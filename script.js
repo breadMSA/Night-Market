@@ -22,6 +22,11 @@ async function sendMessage() {
     const message = input.value.trim();
 
     if (!message) return;
+    
+    // 禁用輸入框和發送按鈕，防止重複發送
+    input.disabled = true;
+    const sendBtn = document.querySelector('[onclick="sendMessage()"]');
+    if (sendBtn) sendBtn.disabled = true;
 
     // 1. 顯示使用者訊息
     appendMessage('user', message);
@@ -29,7 +34,7 @@ async function sendMessage() {
 
     // 2. 建立 AI 訊息容器（用於 streaming）
     const aiMessageDiv = appendMessageContainer('ai');
-    aiMessageDiv.innerHTML = '<span class="animate-pulse">...</span>';
+    aiMessageDiv.innerHTML = '<div class="flex items-center gap-2"><div class="typing-indicator"><span></span><span></span><span></span></div><span class="text-gray-400 text-xs">老王正在思考...</span></div>';
 
     try {
         const response = await fetch('https://night-market-cyan.vercel.app/api/chat', {
@@ -116,7 +121,31 @@ async function sendMessage() {
 
     } catch (error) {
         console.error('發生錯誤:', error);
-        aiMessageDiv.innerHTML = '哎呀！老王現在有點忙（連線錯誤），請稍後再試！😅<br><small>錯誤：' + error.message + '</small>';
+        aiMessageDiv.innerHTML = `
+            <div class="text-red-400">
+                哎呀！老王現在有點忙（連線錯誤），請稍後再試！😅
+                <div class="text-xs text-gray-500 mt-2">錯誤：${error.message}</div>
+                <button onclick="retryLastMessage()" class="mt-2 px-3 py-1 bg-neonPink text-black rounded text-sm hover:bg-white transition-colors">
+                    重試
+                </button>
+            </div>
+        `;
+    } finally {
+        // 重新啟用輸入框
+        input.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
+        input.focus();
+    }
+}
+
+// 儲存最後一則訊息，用於重試
+let lastMessage = '';
+
+// 重試功能
+function retryLastMessage() {
+    if (lastMessage) {
+        document.getElementById('user-input').value = lastMessage;
+        sendMessage();
     }
 }
 
@@ -144,24 +173,64 @@ function appendMessage(sender, text) {
     div.className = sender === 'user' ? 'flex justify-end' : 'flex items-start gap-2';
 
     if (sender === 'user') {
-        div.innerHTML = `<div class="bg-neonPink text-black p-3 rounded-l-lg rounded-br-lg text-sm font-bold max-w-[80%]">${text}</div>`;
+        lastMessage = text; // 儲存訊息供重試使用
+        const timestamp = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `
+            <div class="flex flex-col items-end max-w-[80%]">
+                <div class="bg-neonPink text-black p-3 rounded-l-lg rounded-br-lg text-sm font-bold">${text}</div>
+                <span class="text-xs text-gray-500 mt-1">${timestamp}</span>
+            </div>
+        `;
     }
 
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Enter 鍵發送
+// Enter 鍵發送 + 字數統計
 document.addEventListener('DOMContentLoaded', function() {
     const userInput = document.getElementById('user-input');
     if (userInput) {
         userInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 sendMessage();
             }
         });
     }
 });
+
+// 更新字數統計
+function updateCharCount() {
+    const input = document.getElementById('user-input');
+    const charCount = document.getElementById('charCount');
+    if (input && charCount) {
+        const count = input.value.length;
+        charCount.textContent = `${count}/200`;
+        if (count > 180) {
+            charCount.classList.add('text-neonYellow');
+        } else {
+            charCount.classList.remove('text-neonYellow');
+        }
+    }
+}
+
+// 清除聊天記錄
+function clearChat() {
+    if (confirm('確定要清除所有對話記錄嗎？')) {
+        const chatMessages = document.getElementById('chat-messages');
+        // 保留歡迎訊息
+        chatMessages.innerHTML = `
+            <div class="flex items-start gap-2">
+                <div class="w-8 h-8 bg-neonPink rounded-full flex-shrink-0 flex items-center justify-center text-black font-bold text-xs">王</div>
+                <div class="bg-gray-800 text-gray-200 p-3 rounded-r-lg rounded-bl-lg text-sm border border-gray-700">
+                    嘿！我是老王，士林這一帶我最熟啦！想找好吃的？問我就對了！😎
+                </div>
+            </div>
+        `;
+        lastMessage = '';
+    }
+}
 
 // 平滑滾動
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
