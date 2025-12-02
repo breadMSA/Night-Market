@@ -286,3 +286,23 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function toRad(degrees) {
     return degrees * (Math.PI / 180);
 }
+
+// 滾動偵測，用於改變 Hero 區塊的模糊度
+document.addEventListener('DOMContentLoaded', function() {
+    const heroSection = document.getElementById('hero');
+    const body = document.body;
+    
+    // 監聽滾動事件
+    window.addEventListener('scroll', function() {
+        // 判斷是否滾動超過 Hero 區塊的高度 (或任何你想要的閾值)
+        const scrollThreshold = heroSection.offsetHeight * 0.1; // 滾動超過 Hero 區塊的 10%
+        
+        if (window.scrollY > scrollThreshold) {
+            // 滾動超過閾值，增加模糊度
+            body.classList.add('body-scrolled');
+        } else {
+            // 滾動在頂部，使用初始模糊度
+            body.classList.remove('body-scrolled');
+        }
+    });
+});

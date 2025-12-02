@@ -138,6 +138,41 @@
                 opacity: 1;
             }
         }
+        /* ========== Hero 背景新樣式 (新增/修改) ========== */
+        .hero-bg {
+            /* 使用您上傳的圖片作為背景 */
+            background-image: url('./image_c457a3.jpg'); 
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        /* 初始模糊效果 (輕微模糊) */
+        .hero-bg::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* 讓背景略微變暗，增加霓虹文字對比度 */
+            background-color: rgba(0, 0, 0, 0.4); 
+            /* 初始輕微模糊 */
+            backdrop-filter: blur(3px); 
+            transition: backdrop-filter 0.5s ease-out;
+            z-index: 0;
+        }
+
+        /* 滾動時增加模糊效果 (將此類別加到 body 上) */
+        .body-scrolled .hero-bg::after {
+            /* 滾動後更模糊 */
+            backdrop-filter: blur(8px); 
+        }
+        
+        /* 確保 Hero 內容在偽元素之上 */
+        .hero-bg > .text-center {
+            z-index: 10;
+        }
     </style>
 </head>
 
